@@ -1,0 +1,21 @@
+{
+  "name": "penrose",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/index.js",
+  "scripts": {
+    "start": "node_modules/.bin/webpack-dev-server",
+    "build": "node_modules/.bin/webpack",
+    "build:watch": "node_modules/.bin/webpack -w",
+    "clean": "rm ./dist/*"
+  },
+  "author": "Mark Feeney",
+  "license": "MIT",
+  "devDependencies": {
+    "file-loader": "^0.10.0",
+    "ts-loader": "^2.0.0",
+    "typescript": "^2.1.5",
+    "webpack": "^2.2.1",
+    "webpack-dev-server": "^2.3.0"
+  }
+}
