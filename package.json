@@ -7,11 +7,12 @@
     "start": "node_modules/.bin/webpack-dev-server",
     "build": "node_modules/.bin/webpack",
     "build:watch": "node_modules/.bin/webpack -w",
-    "clean": "rm ./dist/*"
+    "clean": "rm -rf ./dist/*"
   },
   "author": "Mark Feeney",
   "license": "MIT",
   "devDependencies": {
+    "copy-webpack-plugin": "^4.0.1",
     "file-loader": "^0.10.0",
     "ts-loader": "^2.0.0",
     "typescript": "^2.1.5",
