@@ -1,4 +1,4 @@
-console.log("app.ts loaded");
+import {Vector} from "./geometry";
 
 type Margin = {top: number; right: number; bottom: number; left: number};
 
@@ -23,6 +23,16 @@ function viewportSize(): [number, number] {
     const width = Math.max(de.clientWidth, window.innerWidth || 0);
     const height = Math.max(de.clientHeight, window.innerHeight || 0);
     return [width, height];
+}
+
+function animate(context: CanvasRenderingContext2D): void {
+
+    const v = new Vector(1,2);
+
+    context.beginPath();
+    context.fillStyle = "#b8c7e0";
+    context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+    //requestAnimationFrame(() => animate(context));
 }
 
 function main(): void {
@@ -50,11 +60,8 @@ function main(): void {
     if (!context) {
         throw new Error("could not get 2d context");
     }
-    context.beginPath();
-    context.fillStyle = "#b8c7e0";
-    context.fillRect(0, 0, canvasW, canvasH);
 
-
+    animate(context);
 }
 
 main();
