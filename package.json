@@ -14,7 +14,7 @@
     "build": "node_modules/.bin/webpack",
     "build:watch": "node_modules/.bin/webpack -w",
     "clean": "rm -rf ./dist/*",
-    "test": "node_modules/.bin/ts-node node_modules/.bin/tape 'test/**/*.ts'",
+    "test": "node_modules/.bin/ts-node node_modules/.bin/tape 'test/**/*.ts' | node_modules/.bin/faucet",
     "watch": "node_modules/.bin/npm-watch"
   },
   "author": "Mark Feeney",
@@ -22,6 +22,7 @@
   "devDependencies": {
     "@types/tape": "^4.2.29",
     "copy-webpack-plugin": "^4.0.1",
+    "faucet": "0.0.1",
     "file-loader": "^0.10.0",
     "npm-watch": "^0.1.8",
     "tape": "^4.6.3",
