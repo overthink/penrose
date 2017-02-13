@@ -57,4 +57,20 @@ export class Triangle {
         readonly a: Vector2,
         readonly b: Vector2,
         readonly c: Vector2) {}
+
+    static translate(t: Triangle, v: Vector2): Triangle {
+        return new Triangle(
+            Vector2.add(t.a, v),
+            Vector2.add(t.b, v),
+            Vector2.add(t.c, v));
+    }
+
+    static rotate(t: Triangle, theta: Radians, about: Vector2 = Vector2.zero): Triangle {
+        return new Triangle(
+            Vector2.rotate(t.a, theta, about),
+            Vector2.rotate(t.b, theta, about),
+            Vector2.rotate(t.c, theta, about));
+    }
+
 }
+

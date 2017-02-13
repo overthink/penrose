@@ -78,7 +78,18 @@ function main(): void {
         throw new Error("could not get 2d context");
     }
 
-    let triangles: Triangle[] = [new Triangle(new Vector2(20, 20), new Vector2(100, 20), new Vector2(100, 75))];
+    const triangles: Triangle[] = [];
+    (function() {
+        let t = new Triangle(Vector2.zero, new Vector2(100, 0), new Vector2(100, 75));
+        t = Triangle.translate(t, new Vector2(canvasW / 2 + 30, canvasH / 2 + 30));
+        const n = 50;
+        const about = new Vector2(canvasW / 2, canvasH / 2);
+        const theta = 2  * Math.PI / n;
+        for (let i = 0; i < n; ++i) {
+            triangles.push(Triangle.rotate(t, i * theta, about));
+        }
+    })();
+
     const appData = new AppData(context, triangles, canvasW, canvasH);
     draw(appData);
 }
