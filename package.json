@@ -4,7 +4,7 @@
   "description": "",
   "main": "./src/index.js",
   "watch": {
-    "test": {
+    "test-pretty": {
       "patterns": ["src", "test"],
       "extensions": "ts"
     }
@@ -14,7 +14,8 @@
     "build": "node_modules/.bin/webpack",
     "build:watch": "node_modules/.bin/webpack -w",
     "clean": "rm -rf ./dist/*",
-    "test": "node_modules/.bin/ts-node node_modules/.bin/tape 'test/**/*.ts' | node_modules/.bin/faucet",
+    "test-pretty": "npm test | node_modules/.bin/faucet",
+    "test": "node_modules/.bin/ts-node node_modules/.bin/tape 'test/**/*.ts'",
     "watch": "node_modules/.bin/npm-watch"
   },
   "author": "Mark Feeney",

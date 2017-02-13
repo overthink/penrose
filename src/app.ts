@@ -1,13 +1,14 @@
-import {Vector} from "./geometry";
+import {Vector2, Triangle} from "./geometry";
 
 type Margin = {top: number; right: number; bottom: number; left: number};
 
 /** Return a new canvas with given width, height, and margin. */
 function createCanvas(width: number, height: number, margin: Margin, border: string): HTMLCanvasElement {
     const canvas = document.createElement("canvas");
+    // Don't use CSS to set width/height, see: http://stackoverflow.com/a/12862952/69689
+    canvas.setAttribute("width", width.toString());
+    canvas.setAttribute("height", height.toString());
     const s = canvas.style;
-    s.width = width + "px";
-    s.height = height + "px";
     s.marginTop = margin.top + "px";
     s.marginRight = margin.right + "px";
     s.marginBottom = margin.bottom + "px";
@@ -25,14 +26,30 @@ function viewportSize(): [number, number] {
     return [width, height];
 }
 
-function animate(context: CanvasRenderingContext2D): void {
+function draw(appData: AppData): void {
 
-    const v = new Vector(1,2);
+    //context.fillStyle = "#b8c7e0";
+    //context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+    const c = appData.context;
+    for (let t of appData.triangles) {
+        c.beginPath();
+        c.moveTo(t.a.x, t.a.y);
+        c.lineTo(t.b.x, t.b.y);
+        c.lineTo(t.c.x, t.c.y);
+        //context.lineTo(t.a.x, t.a.y);
+        c.closePath();
+        c.stroke();
+    }
 
-    context.beginPath();
-    context.fillStyle = "#b8c7e0";
-    context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-    //requestAnimationFrame(() => animate(context));
+}
+
+// TBD better name; basically everything needed when drawing
+class AppData {
+    constructor(
+        readonly context: CanvasRenderingContext2D,
+        readonly triangles: Triangle[],
+        readonly canvasWidth: number,
+        readonly canvasHeight: number) {}
 }
 
 function main(): void {
@@ -61,7 +78,9 @@ function main(): void {
         throw new Error("could not get 2d context");
     }
 
-    animate(context);
+    let triangles: Triangle[] = [new Triangle(new Vector2(20, 20), new Vector2(100, 20), new Vector2(100, 75))];
+    const appData = new AppData(context, triangles, canvasW, canvasH);
+    draw(appData);
 }
 
 main();
