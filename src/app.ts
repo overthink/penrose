@@ -80,13 +80,17 @@ function main(): void {
 
     const triangles: Triangle[] = [];
     (function() {
-        let t = new Triangle(Vector2.zero, new Vector2(100, 0), new Vector2(100, 75));
-        t = Triangle.translate(t, new Vector2(canvasW / 2 + 30, canvasH / 2 + 30));
-        const n = 50;
-        const about = new Vector2(canvasW / 2, canvasH / 2);
+        const centre = new Vector2(canvasW / 2, canvasH / 2 + 10);
+        const t = new Triangle(Vector2.zero, new Vector2(100, 0), new Vector2(100, 75))
+            .translate(centre);
+            //.translate(centre.add(new Vector2(0, 0)));
+        const n = 60;
         const theta = 2  * Math.PI / n;
         for (let i = 0; i < n; ++i) {
-            triangles.push(Triangle.rotate(t, i * theta, about));
+            let newT = t.rotate(i * theta, centre);
+            newT = newT
+                .translate(newT.b.subtract(centre).normalize().multiply(i*1.3));
+            triangles.push(newT);
         }
     })();
 

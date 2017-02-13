@@ -1,4 +1,4 @@
-type Radians = number
+type Radians = number // just for documentation purposes
 
 /**
  * A 2D vector aka point.
@@ -6,46 +6,46 @@ type Radians = number
 export class Vector2 {
     constructor(readonly x: number, readonly y: number) {}
 
-    static add(v1: Vector2, v2: Vector2): Vector2 {
-        return new Vector2(v1.x + v2.x, v1.y + v2.y);
+    add(v: Vector2): Vector2 {
+        return new Vector2(this.x + v.x, this.y + v.y);
     }
 
-    static subtract(v1: Vector2, v2: Vector2): Vector2 {
-        return new Vector2(v1.x - v2.x, v1.y - v2.y);
+    subtract(v: Vector2): Vector2 {
+        return new Vector2(this.x - v.x, this.y - v.y);
     }
 
-    static multiply(scalar: number, v: Vector2): Vector2 {
-        return new Vector2(v.x * scalar, v.y * scalar);
+    multiply(scalar: number): Vector2 {
+        return new Vector2(this.x * scalar, this.y * scalar);
     }
 
-    static magnitude(v: Vector2): number {
-        return Math.sqrt(v.x * v.x + v.y * v.y);
+    magnitude(): number {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
-    static normalize(v: Vector2): Vector2 {
-        const mag = Vector2.magnitude(v);
+    normalize(): Vector2 {
+        const mag = this.magnitude();
         if (mag == 0) {
-            throw new Error("v has magnitude 0");
+            throw new Error("this vector has magnitude 0");
         }
-        return Vector2.multiply(1 / mag, v);
+        return this.multiply(1 / mag);
     }
 
-    static dot(v1: Vector2, v2: Vector2): number {
-        return v1.x * v2.x + v1.y * v2.y;
+    dot(v: Vector2): number {
+        return this.x * v.x + this.y * v.y;
     }
 
     /**
-     * Return a new point that is point 'p' rotated 'theta' radians
+     * Return a new point that is this point rotated 'theta' radians
      * counter-clockwise about point 'about'.
      */
-    static rotate(p: Vector2, theta: Radians, about: Vector2 = Vector2.zero) {
+    rotate(theta: Radians, about: Vector2 = Vector2.zero) {
         // Use homogeneous coordinates to do the translation to origin
         // rotation, and translation back in one shot.
         // see 1.2 in http://web.cs.iastate.edu/~cs577/handouts/homogeneous-transform.pdf
         const cosT = Math.cos(theta);
         const sinT = Math.sin(theta);
-        const newX = p.x * cosT - p.y * sinT - about.x * cosT + about.y * sinT + about.x;
-        const newY = p.x * sinT + p.y * cosT - about.x * sinT - about.y * cosT + about.y;
+        const newX = this.x * cosT - this.y * sinT - about.x * cosT + about.y * sinT + about.x;
+        const newY = this.x * sinT + this.y * cosT - about.x * sinT - about.y * cosT + about.y;
         return new Vector2(newX, newY);
     }
 
@@ -58,18 +58,15 @@ export class Triangle {
         readonly b: Vector2,
         readonly c: Vector2) {}
 
-    static translate(t: Triangle, v: Vector2): Triangle {
-        return new Triangle(
-            Vector2.add(t.a, v),
-            Vector2.add(t.b, v),
-            Vector2.add(t.c, v));
+    translate(v: Vector2): Triangle {
+        return new Triangle(this.a.add(v), this.b.add(v), this.c.add(v));
     }
 
-    static rotate(t: Triangle, theta: Radians, about: Vector2 = Vector2.zero): Triangle {
+    rotate(theta: Radians, about: Vector2 = Vector2.zero): Triangle {
         return new Triangle(
-            Vector2.rotate(t.a, theta, about),
-            Vector2.rotate(t.b, theta, about),
-            Vector2.rotate(t.c, theta, about));
+            this.a.rotate(theta, about),
+            this.b.rotate(theta, about),
+            this.c.rotate(theta, about));
     }
 
 }
