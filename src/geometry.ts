@@ -1,5 +1,7 @@
 type Radians = number // just for documentation purposes
 
+export const Phi = (1 + Math.sqrt(5)) / 2;
+
 /**
  * A 2D vector aka point.
  */
@@ -56,17 +58,19 @@ export class Triangle {
     constructor(
         readonly a: Vector2,
         readonly b: Vector2,
-        readonly c: Vector2) {}
+        readonly c: Vector2,
+        readonly colour: string) {}
 
     translate(v: Vector2): Triangle {
-        return new Triangle(this.a.add(v), this.b.add(v), this.c.add(v));
+        return new Triangle(this.a.add(v), this.b.add(v), this.c.add(v), this.colour);
     }
 
     rotate(theta: Radians, about: Vector2 = Vector2.zero): Triangle {
         return new Triangle(
             this.a.rotate(theta, about),
             this.b.rotate(theta, about),
-            this.c.rotate(theta, about));
+            this.c.rotate(theta, about),
+            this.colour);
     }
 
 }
