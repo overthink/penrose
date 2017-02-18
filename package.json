@@ -5,7 +5,10 @@
   "main": "./src/index.js",
   "watch": {
     "test-pretty": {
-      "patterns": ["src", "test"],
+      "patterns": [
+        "src",
+        "test"
+      ],
       "extensions": "ts"
     }
   },
@@ -21,6 +24,7 @@
   "author": "Mark Feeney",
   "license": "MIT",
   "devDependencies": {
+    "@types/pixi.js": "^4.3.1",
     "@types/tape": "^4.2.29",
     "copy-webpack-plugin": "^4.0.1",
     "faucet": "0.0.1",
@@ -32,5 +36,8 @@
     "typescript": "^2.1.5",
     "webpack": "^2.2.1",
     "webpack-dev-server": "^2.3.0"
+  },
+  "dependencies": {
+    "pixi.js": "^4.3.5"
   }
 }

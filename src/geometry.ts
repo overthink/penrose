@@ -1,4 +1,4 @@
-type Radians = number // just for documentation purposes
+export type Radians = number // just for documentation purposes
 
 export const Phi = (1 + Math.sqrt(5)) / 2;
 

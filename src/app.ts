@@ -1,23 +1,34 @@
 import {Vector2, Triangle, Phi} from "./geometry";
+import * as PIXI from "pixi.js";
+import Stage = PIXI.core.Stage;
+import Graphics = PIXI.Graphics;
+import WebGLRenderer = PIXI.WebGLRenderer;
 
 type Margin = {top: number; right: number; bottom: number; left: number};
 
+function cssColourToNum(cssColour: string): number {
+    return parseInt(cssColour.substr(1), 16);
+}
+
 const Red = "#d50081";
 const Blue = "#0e73ba";
+const RedHex = cssColourToNum(Red);
+const BlueHex = cssColourToNum(Blue);
+
+function disableScrollbars(canvas: HTMLCanvasElement): void {
+    // canvas is display:inline(-block?) by default, apparently
+    // display:block prevents scrollbars; don't fully get it.
+    // http://stackoverflow.com/a/8486324/69689
+    canvas.style.display = "block";
+}
 
 /** Return a new canvas with given width, height, and margin. */
-function createCanvas(width: number, height: number, margin: Margin, border: string): HTMLCanvasElement {
+function createCanvas(width: number, height: number): HTMLCanvasElement {
     const canvas = document.createElement("canvas");
     // Don't use CSS to set width/height, see: http://stackoverflow.com/a/12862952/69689
     canvas.setAttribute("width", width.toString());
     canvas.setAttribute("height", height.toString());
-    const s = canvas.style;
-    s.marginTop = margin.top + "px";
-    s.marginRight = margin.right + "px";
-    s.marginBottom = margin.bottom + "px";
-    s.marginLeft = margin.left + "px";
-    s.border = border;
-    s.display = "block"; // disables scrollbars
+    disableScrollbars(canvas);
     return canvas;
 }
 
@@ -60,6 +71,24 @@ function drawP2Triangle(context: CanvasRenderingContext2D, t: Triangle): void {
     context.stroke();
 }
 
+function drawP2TrianglePixi(g: Graphics, t: Triangle): void {
+    // Assume this:
+    //      A
+    //     /ϴ\
+    //    /   \
+    //   B_____C
+    const isRed = t.colour == Red;
+    if (!isRed) {
+        g.beginFill(BlueHex);
+    }
+    g.moveTo(t.b.x, t.b.y);
+    g.lineTo(t.a.x, t.a.y);
+    g.lineTo(t.c.x, t.c.y);
+    if (!isRed) {
+        g.endFill();
+    }
+}
+
 function deflate(t: Triangle): Triangle[] {
     const result: Triangle[] = [];
     if (t.colour == Red) {
@@ -85,11 +114,15 @@ function deflate(t: Triangle): Triangle[] {
 }
 
 function deflateMany(ts: Triangle[]): Triangle[] {
-    return [].concat.apply([], ts.map(deflate));
+    const result: Triangle[] = [];
+    ts.map(deflate).forEach(ts0 => ts0.forEach(t => result.push(t)));
+    return result;
 }
 
-// Apply f to args, then take the result of that and apply f to it again. Do
-// this n times.
+/**
+ * Apply f to args, then take the result of that and apply f to it again. Do
+ * this n times.
+ */
 function iterate<T>(f: (a: T) => T, args: T, n: number) {
     let result = args;
     while (n > 0) {
@@ -131,24 +164,52 @@ function drawP2(context: CanvasRenderingContext2D, triangles: Triangle[]): void 
     }
 }
 
-function main(): void {
-    const container = document.querySelector("#canvas-container");
-    if (!container) {
-        throw new Error("no canvas container element");
+function drawP2Pixi(g: Graphics, triangles: Triangle[]): void {
+    for (let t of triangles) {
+        drawP2TrianglePixi(g, t);
     }
+}
 
+/**
+ * Return the element from the page that will hold the canvas. The returned
+ * element is styled to take up the whole viewport, with given margins and
+ * border thickness.
+ */
+function getCanvasContainer(margin: Margin, borderStyle: string): Element {
+    const id = "#canvas-container";
+    const container = document.querySelector(id);
+    if (!container || !(container instanceof HTMLElement)) {
+        throw new Error(`no HTMLElement found with selector ${id}`);
+    }
+    const s = container.style;
+    s.marginTop = margin.top + "px";
+    s.marginRight = margin.right + "px";
+    s.marginBottom = margin.bottom + "px";
+    s.marginLeft = margin.left + "px";
+    s.border = borderStyle;
+    return container;
+}
+
+/**
+ * Return [width, height] values to use for the canvas, given margin and border
+ * constraints.
+ */
+function calcCanvasDims(margin: Margin, borderThickness: number): [number, number] {
     const [viewportW, viewportH] = viewportSize();
+    const canvasW = viewportW - margin.left - margin.right - 2 * borderThickness;
+    const canvasH = viewportH - margin.top - margin.bottom - 2 * borderThickness;
+    return [canvasW, canvasH];
+}
+
+/** Run the app using HTML5 canvas directly. */
+function mainCanvas(): void {
+    const start = Date.now();
     const margin = {top: 50, right: 50, bottom: 50, left: 50};
     const borderThickness = 1;
-    const canvasW = viewportW - margin.left - margin.right;
-    const canvasH = viewportH - margin.top - margin.bottom - 2 * borderThickness;
+    const [canvasW, canvasH] = calcCanvasDims(margin, borderThickness);
+    const container = getCanvasContainer(margin, `${borderThickness}px solid #333`);
 
-    const canvas = createCanvas(
-        canvasW,
-        canvasH,
-        margin,
-        `${borderThickness}px solid #333`);
-
+    const canvas = createCanvas(canvasW, canvasH);
     container.appendChild(canvas);
 
     const context = canvas.getContext("2d");
@@ -156,9 +217,58 @@ function main(): void {
         throw new Error("could not get 2d context");
     }
 
-    const triangles = generateP2Tiling(canvasW, canvasH, 9);
-    drawP2(context, triangles);
-    console.log("Drew", triangles.length, "triangles");
+    let triangles = generateP2Tiling(canvasW, canvasH, 8);
+
+    const centre = new Vector2(canvasW / 2, canvasH / 2);
+
+    const draw = () => {
+        const start = Date.now();
+        drawP2(context, triangles);
+        triangles = triangles.map(t => t.rotate(0.01, centre));
+        // console.log(Date.now(), "done animation frame", Date.now() - start);
+        requestAnimationFrame(draw);
+    };
+    draw();
+
+    console.log(`mainCanvas() ran in ${Date.now() - start} ms - ${triangles.length} triangles`);
 }
 
-main();
+/** Run the app using Pixi's renderer instead of direct canvas. */
+function mainPixi(): void {
+    const start = Date.now();
+    const margin = {top: 50, right: 50, bottom: 50, left: 50};
+    const borderThickness = 1;
+    const [canvasW, canvasH] = calcCanvasDims(margin, borderThickness);
+    const renderer = PIXI.autoDetectRenderer(canvasW, canvasH, {antialias: true});
+    // const renderer = new WebGLRenderer(canvasW, canvasH, {antialias: true});
+    console.log("renderer", renderer);
+    const containerElement = getCanvasContainer(margin, `${borderThickness}px solid #333`);
+    disableScrollbars(renderer.view);
+    containerElement.appendChild(renderer.view);
+
+    const g = new Graphics();
+    g.lineStyle(1, 0x333333, 1);
+    g.beginFill(RedHex, 1); // This way we don't need to fill half the triangles
+    g.drawRect(0, 0, canvasW, canvasH);
+    g.endFill();
+
+    const stage = new PIXI.Container();
+    stage.addChild(g);
+
+    const triangles = generateP2Tiling(canvasW, canvasH, 8);
+    drawP2Pixi(g, triangles);
+
+    // const centre = new Vector2(canvasW / 2, canvasH / 2);
+    const draw = () => {
+        renderer.render(stage);
+        stage.rotation += 0.01;
+        // triangles = triangles.map(t => t.rotate(0.01, centre));
+        requestAnimationFrame(draw);
+    };
+    draw();
+
+    console.log(`mainPixi() ran in ${Date.now() - start} ms - ${triangles.length} triangles`);
+}
+
+mainPixi();
+//mainCanvas();
