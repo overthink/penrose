@@ -1,4 +1,4 @@
-import {Vector2, Triangle, Phi} from "./geometry";
+import {Vec2, Triangle, Phi} from "./geometry";
 import * as PIXI from "pixi.js";
 import Stage = PIXI.core.Stage;
 import Graphics = PIXI.Graphics;
@@ -92,17 +92,17 @@ function drawP2TrianglePixi(g: Graphics, t: Triangle): void {
 function deflate(t: Triangle): Triangle[] {
     const result: Triangle[] = [];
     if (t.colour == Red) {
-        const ab = t.b.subtract(t.a); // vector from a to b
-        const p = t.a.add(ab.normalize().multiply(ab.magnitude() / Phi));
+        const ab = t.b.copy().subtract(t.a); // vector from a to b
+        const p = t.a.copy().add(ab.copy().normalize().multiply(ab.magnitude() / Phi));
         result.push(
             new Triangle(t.c, p, t.b, Red),
             new Triangle(p, t.c, t.a, Blue)
         );
     } else {
-        const ba = t.a.subtract(t.b); // vector from b to a
-        const bc = t.c.subtract(t.b); // vector from b to c
-        const q = t.b.add(ba.normalize().multiply(ba.magnitude() / Phi));
-        const r = t.b.add(bc.normalize().multiply(bc.magnitude() / Phi));
+        const ba = t.a.copy().subtract(t.b); // vector from b to a
+        const bc = t.c.copy().subtract(t.b); // vector from b to c
+        const q = t.b.copy().add(ba.copy().normalize().multiply(ba.magnitude() / Phi));
+        const r = t.b.copy().add(bc.copy().normalize().multiply(bc.magnitude() / Phi));
         result.push(
             new Triangle(q, r, t.b, Blue),
             new Triangle(r, q, t.a, Red),
@@ -134,20 +134,20 @@ function iterate<T>(f: (a: T) => T, args: T, n: number) {
 
 function generateP2Tiling(width: number, height: number, iterations: number): Triangle[] {
     const triangles: Triangle[] = [];
-    const centre = new Vector2(width / 2, height / 2);
+    const centre = new Vec2(width / 2, height / 2);
     const sideLen = Math.max(width, height) / 2 * 1.3;
 
     // Generating a "wheel" of triangles about the origin.
     // start is the point from which we start rotating
-    let start = new Vector2(centre.x, centre.y + sideLen);
+    let start = new Vec2(centre.x, centre.y + sideLen);
     for (let i = 0; i < 10; ++i) {
-        const b = start;
-        const c = start.rotate(2 * Math.PI / 10, centre);
-        let t = new Triangle(centre, b, c, Red);
-        start = t.c;
+        const b = start.copy();
+        const c = start.copy().rotate(2 * Math.PI / 10, centre);
+        let t = new Triangle(centre.copy(), b, c, Red);
+        start = t.c.copy();
         // mirror every other triangle
         if (i % 2 == 0) {
-            t = new Triangle(centre, c, b, Red);
+            t = new Triangle(centre.copy(), c, b, Red);
         }
         triangles.push(t)
     }
@@ -164,7 +164,11 @@ function drawP2(context: CanvasRenderingContext2D, triangles: Triangle[]): void 
     }
 }
 
-function drawP2Pixi(g: Graphics, triangles: Triangle[]): void {
+function drawP2Pixi(g: Graphics, canvasW: number, canvasH: number, triangles: Triangle[]): void {
+    g.lineStyle(1, 0x333333, 1);
+    g.beginFill(RedHex, 1); // This way we don't need to fill half the triangles
+    g.drawRect(0, 0, canvasW, canvasH);
+    g.endFill();
     for (let t of triangles) {
         drawP2TrianglePixi(g, t);
     }
@@ -217,14 +221,14 @@ function mainCanvas(): void {
         throw new Error("could not get 2d context");
     }
 
-    let triangles = generateP2Tiling(canvasW, canvasH, 8);
+    const triangles = generateP2Tiling(canvasW, canvasH, 7);
 
-    const centre = new Vector2(canvasW / 2, canvasH / 2);
+    const centre = new Vec2(canvasW / 2, canvasH / 2);
 
     const draw = () => {
-        const start = Date.now();
+        //const start = Date.now();
         drawP2(context, triangles);
-        triangles = triangles.map(t => t.rotate(0.01, centre));
+        triangles.forEach(t => t.rotate(0.01, centre));
         // console.log(Date.now(), "done animation frame", Date.now() - start);
         requestAnimationFrame(draw);
     };
@@ -247,22 +251,17 @@ function mainPixi(): void {
     containerElement.appendChild(renderer.view);
 
     const g = new Graphics();
-    g.lineStyle(1, 0x333333, 1);
-    g.beginFill(RedHex, 1); // This way we don't need to fill half the triangles
-    g.drawRect(0, 0, canvasW, canvasH);
-    g.endFill();
-
     const stage = new PIXI.Container();
     stage.addChild(g);
 
-    const triangles = generateP2Tiling(canvasW, canvasH, 8);
-    drawP2Pixi(g, triangles);
-
-    // const centre = new Vector2(canvasW / 2, canvasH / 2);
+    const triangles = generateP2Tiling(canvasW, canvasH, 7);
+    const centre = new Vec2(canvasW / 2, canvasH / 2);
     const draw = () => {
+        g.clear();
+        drawP2Pixi(g, canvasW, canvasH, triangles);
         renderer.render(stage);
-        stage.rotation += 0.01;
-        // triangles = triangles.map(t => t.rotate(0.01, centre));
+        // stage.rotation += 0.01;
+        triangles.forEach(t => t.rotate(0.01, centre));
         requestAnimationFrame(draw);
     };
     draw();
@@ -271,4 +270,4 @@ function mainPixi(): void {
 }
 
 mainPixi();
-//mainCanvas();
+// mainCanvas();
