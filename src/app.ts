@@ -135,7 +135,7 @@ function iterate<T>(f: (a: T) => T, args: T, n: number) {
 function generateP2Tiling(width: number, height: number, iterations: number): Triangle[] {
     const triangles: Triangle[] = [];
     const centre = new Vec2(width / 2, height / 2);
-    const sideLen = Math.max(width, height) / 2 * 1.3;
+    const sideLen = Math.max(width, height) / 2 * 1.4;
 
     // Generating a "wheel" of triangles about the origin.
     // start is the point from which we start rotating
@@ -143,11 +143,11 @@ function generateP2Tiling(width: number, height: number, iterations: number): Tr
     for (let i = 0; i < 10; ++i) {
         const b = start.copy();
         const c = start.copy().rotate(2 * Math.PI / 10, centre);
-        let t = new Triangle(centre.copy(), b, c, Red);
+        let t = new Triangle(centre, b, c, Red);
         start = t.c.copy();
         // mirror every other triangle
         if (i % 2 == 0) {
-            t = new Triangle(centre.copy(), c, b, Red);
+            t = new Triangle(centre, c, b, Red);
         }
         triangles.push(t)
     }
@@ -232,7 +232,7 @@ function mainCanvas(): void {
         // console.log(Date.now(), "done animation frame", Date.now() - start);
         requestAnimationFrame(draw);
     };
-    draw();
+    requestAnimationFrame(draw);
 
     console.log(`mainCanvas() ran in ${Date.now() - start} ms - ${triangles.length} triangles`);
 }
@@ -264,7 +264,7 @@ function mainPixi(): void {
         triangles.forEach(t => t.rotate(0.01, centre));
         requestAnimationFrame(draw);
     };
-    draw();
+    requestAnimationFrame(draw);
 
     console.log(`mainPixi() ran in ${Date.now() - start} ms - ${triangles.length} triangles`);
 }

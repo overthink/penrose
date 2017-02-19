@@ -1,5 +1,5 @@
 import * as test from "tape";
-import {Vec2} from "../src/geometry";
+import {Vec2, Triangle} from "../src/geometry";
 
 // short form to create new Vec2 instances
 function v2(x: number, y: number): Vec2 {
@@ -69,5 +69,24 @@ test("Vec2 rotations about arbitrary point", t => {
     let rotated = v2(9.5, 5).rotate(Math.PI / 2, about);
     t.equal(round(rotated.x), 4.5);
     t.equal(rotated.y, 10);
+    t.end();
+});
+
+test("Triangle constructor makes copies of points", t => {
+   const a = new Vec2(0, 0);
+   const b = new Vec2(4, 0);
+   const c = new Vec2(4, 3);
+   const triangle = new Triangle(a, b, c, "red");
+   // mutate a
+   a.x = 100;
+   t.equals(triangle.a.x, 0);
+   t.end();
+});
+
+test("Triangle copy makes fully independent triangles", t => {
+    const t1 = new Triangle(v2(0, 0), v2(4, 0), v2(4, 3), "red");
+    const t2 = t1.copy();
+    t1.a.x = 42;
+    t.equals(t2.a.x, 0, "Changing t1's point a shoud not affect t2's point a");
     t.end();
 });

@@ -88,8 +88,10 @@ export class Triangle {
     c: Vec2;
     colour: string;
 
+    /** Create a new triangle using __copies__ of a, b, and c. */
     constructor(a: Vec2, b: Vec2, c: Vec2, colour: string) {
-        // defensive copy on vectors, which are mutable
+        // Should I do this, or have two constructors, I wonder... Will stick
+        // with this till need for non-copying constructor appears.
         this.a = a.copy();
         this.b = b.copy();
         this.c = c.copy();
@@ -108,4 +110,3 @@ export class Triangle {
     }
 
 }
-
